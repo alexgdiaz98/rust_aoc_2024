@@ -4,7 +4,6 @@ use std::fs::read_to_string;
 use std::iter::zip;
 use std::path::Path;
 
-#[allow(dead_code)]
 pub fn day01(input_path: &Path) -> Result<(String, String)> {
     let contents: String = read_to_string(input_path).expect("Error reading file");
     let mut p1: usize = 0;

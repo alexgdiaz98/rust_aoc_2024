@@ -17,7 +17,6 @@ fn is_safe(mut report: Vec<isize>) -> bool {
     diffs.clone().min().unwrap() >= 1 && diffs.max().unwrap() <= 3
 }
 
-#[allow(dead_code)]
 pub fn day02(input_path: &Path) -> Result<(String, String)> {
     let contents: String = read_to_string(input_path).expect("Error reading file");
     let mut p1: usize = 0;

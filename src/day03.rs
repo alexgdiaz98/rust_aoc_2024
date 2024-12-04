@@ -3,7 +3,6 @@ use std::path::Path;
 
 use anyhow::Result;
 
-#[allow(dead_code)]
 pub fn day03(input_path: &Path) -> Result<(String, String)> {
     let contents: String = read_to_string(input_path).expect("Error reading file");
     let mut p1: usize = 0;
