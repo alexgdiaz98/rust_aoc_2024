@@ -60,8 +60,8 @@ pub fn day04(input_path: &Path) -> Result<(String, String)> {
             grid.insert(Coord(i as isize, j as isize), c);
         }
     }
-    for i in 0..max_i + 1 {
-        for j in 0..max_j + 1 {
+    for i in 0..=max_i {
+        for j in 0..=max_j {
             find_matches(&grid, Coord(i, j), &mut p1, &mut p2);
         }
     }
