@@ -4,11 +4,12 @@ mod day03;
 
 use std::{env, ffi::OsString, path::Path, process::exit};
 
+use anyhow::Result;
 use day01::day01;
 use day02::day02;
 use day03::day03;
 
-fn main() {
+fn main() -> Result<()> {
     let args: Vec<_> = env::args_os().skip(1).collect();
     if args.len() != 1 && args.len() != 2 {
         eprintln!(
@@ -40,6 +41,7 @@ fn main() {
             eprintln!("Invalid day: {}", day);
             exit(-1);
         }
-    };
-    println!("{}: p1: {} p2: {}", day, p1, p2);
+    }?;
+    println!("p1:\n{}\np2:\n{}", p1, p2);
+    Ok(())
 }

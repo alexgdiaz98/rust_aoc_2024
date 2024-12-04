@@ -1,6 +1,8 @@
 use std::fs::read_to_string;
 use std::path::Path;
 
+use anyhow::Result;
+
 fn is_safe(mut report: Vec<isize>) -> bool {
     if !report.is_sorted() {
         report.reverse();
@@ -16,7 +18,7 @@ fn is_safe(mut report: Vec<isize>) -> bool {
 }
 
 #[allow(dead_code)]
-pub fn day02(input_path: &Path) -> (String, String) {
+pub fn day02(input_path: &Path) -> Result<(String, String)> {
     let contents: String = read_to_string(input_path).expect("Error reading file");
     let mut p1: usize = 0;
     let mut p2: usize = 0;
@@ -39,5 +41,5 @@ pub fn day02(input_path: &Path) -> (String, String) {
             }
         }
     }
-    (p1.to_string(), p2.to_string())
+    Ok((p1.to_string(), p2.to_string()))
 }
