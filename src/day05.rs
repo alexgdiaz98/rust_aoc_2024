@@ -5,9 +5,9 @@ use std::path::Path;
 
 use anyhow::Result;
 
-fn check_ordering(rules: &HashMap<i32, Vec<i32>>, tokens: &[i32]) -> Option<usize> {
-    let tokens = tokens.iter();
-    for (src, dst) in tokens.clone().zip(tokens.clone().skip(1)) {
+fn check_ordering(rules: &HashMap<i32, Vec<i32>>, pages: &[i32]) -> Option<usize> {
+    let pages = pages.iter();
+    for (src, dst) in pages.clone().zip(pages.clone().skip(1)) {
         if let Some(v) = rules.get(dst) {
             if !v.contains(src) {
                 return None;
@@ -16,7 +16,7 @@ fn check_ordering(rules: &HashMap<i32, Vec<i32>>, tokens: &[i32]) -> Option<usiz
             return None;
         }
     }
-    let v = tokens.collect::<Vec<&i32>>();
+    let v = pages.collect::<Vec<&i32>>();
     Some(**v.get(v.len() / 2).unwrap() as usize)
 }
 
@@ -34,13 +34,12 @@ pub fn day05(input_path: &Path) -> Result<(String, String)> {
             .or_insert(vec![src.parse()?]);
     }
     for line in pages.split('\n') {
-        let tokens_iter = line.split(',').map(|t| t.parse::<i32>().unwrap());
-        let mut tokens: Vec<i32> = tokens_iter.clone().collect();
-        if let Some(addend) = check_ordering(&rules, tokens.as_slice()) {
+        let mut pages: Vec<i32> = line.split(',').map(|t| t.parse::<i32>().unwrap()).collect();
+        if let Some(addend) = check_ordering(&rules, pages.as_slice()) {
             p1 += addend;
             continue;
         }
-        tokens.sort_by(|a, b| {
+        pages.sort_by(|a, b| {
             if let Some(v) = rules.get(b) {
                 if v.contains(a) {
                     return Ordering::Less;
@@ -53,7 +52,7 @@ pub fn day05(input_path: &Path) -> Result<(String, String)> {
             }
             Ordering::Equal
         });
-        if let Some(addend) = check_ordering(&rules, tokens.as_slice()) {
+        if let Some(addend) = check_ordering(&rules, pages.as_slice()) {
             p2 += addend;
         }
     }
