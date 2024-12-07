@@ -10,6 +10,21 @@ enum Operand {
     Concat,
 }
 
+fn check_equation(result: i64, values: &[i64], ops: &[&Operand]) -> bool {
+    let mut running = *values.first().unwrap();
+    for (i, value) in values.iter().skip(1).enumerate() {
+        match ops.get(i).unwrap() {
+            Operand::Add => running += value,
+            Operand::Mul => running *= value,
+            Operand::Concat => {
+                running *= 10_i64.pow(value.to_string().len() as u32);
+                running += value;
+            }
+        }
+    }
+    running == result
+}
+
 pub fn day07(input_path: &Path) -> Result<(String, String)> {
     let mut p1: usize = 0;
     let mut p2: usize = 0;
@@ -22,43 +37,23 @@ pub fn day07(input_path: &Path) -> Result<(String, String)> {
             .split(' ')
             .map(|v| v.parse().unwrap())
             .collect();
-        'p1_loop: for ops in repeat_n([Operand::Add, Operand::Mul].iter(), values.len() - 1)
+        for ops in repeat_n([Operand::Add, Operand::Mul].iter(), values.len() - 1)
             .multi_cartesian_product()
         {
-            let mut running = *values.first().unwrap();
-            for (i, value) in values.iter().skip(1).enumerate() {
-                match ops.get(i) {
-                    Some(Operand::Add) => running += value,
-                    Some(Operand::Mul) => running *= value,
-                    _ => eprintln!("Unexpected misalignment"),
-                }
-            }
-            if running == result {
+            if check_equation(result, values.as_slice(), ops.as_slice()) {
                 p1 += result as usize;
-                break 'p1_loop;
+                break;
             }
         }
-        'p2_loop: for ops in repeat_n(
+        for ops in repeat_n(
             [Operand::Add, Operand::Mul, Operand::Concat].iter(),
             values.len() - 1,
         )
         .multi_cartesian_product()
         {
-            let mut running = *values.first().unwrap();
-            for (i, value) in values.iter().skip(1).enumerate() {
-                match ops.get(i) {
-                    Some(Operand::Add) => running += value,
-                    Some(Operand::Mul) => running *= value,
-                    Some(Operand::Concat) => {
-                        running *= 10_i64.pow(value.to_string().len() as u32);
-                        running += value;
-                    }
-                    _ => eprintln!("Unexpected misalignment"),
-                }
-            }
-            if running == result {
+            if check_equation(result, values.as_slice(), ops.as_slice()) {
                 p2 += result as usize;
-                break 'p2_loop;
+                break;
             }
         }
     }
