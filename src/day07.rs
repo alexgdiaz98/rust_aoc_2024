@@ -1,0 +1,66 @@
+use std::fs::read_to_string;
+use std::path::Path;
+
+use anyhow::Result;
+use itertools::{repeat_n, Itertools};
+
+enum Operand {
+    Add,
+    Mul,
+    Concat,
+}
+
+pub fn day07(input_path: &Path) -> Result<(String, String)> {
+    let mut p1: usize = 0;
+    let mut p2: usize = 0;
+    let contents: String = read_to_string(input_path).expect("Error reading file");
+    for line in contents.split("\n") {
+        let (result, values) = line.split_once(':').unwrap();
+        let result: i64 = result.parse().unwrap();
+        let values: Vec<i64> = values
+            .trim()
+            .split(' ')
+            .map(|v| v.parse().unwrap())
+            .collect();
+        'p1_loop: for ops in repeat_n([Operand::Add, Operand::Mul].iter(), values.len() - 1)
+            .multi_cartesian_product()
+        {
+            let mut running = *values.first().unwrap();
+            for (i, value) in values.iter().skip(1).enumerate() {
+                match ops.get(i) {
+                    Some(Operand::Add) => running += value,
+                    Some(Operand::Mul) => running *= value,
+                    _ => eprintln!("Unexpected misalignment"),
+                }
+            }
+            if running == result {
+                p1 += result as usize;
+                break 'p1_loop;
+            }
+        }
+        'p2_loop: for ops in repeat_n(
+            [Operand::Add, Operand::Mul, Operand::Concat].iter(),
+            values.len() - 1,
+        )
+        .multi_cartesian_product()
+        {
+            let mut running = *values.first().unwrap();
+            for (i, value) in values.iter().skip(1).enumerate() {
+                match ops.get(i) {
+                    Some(Operand::Add) => running += value,
+                    Some(Operand::Mul) => running *= value,
+                    Some(Operand::Concat) => {
+                        running *= 10_i64.pow(value.to_string().len() as u32);
+                        running += value;
+                    }
+                    _ => eprintln!("Unexpected misalignment"),
+                }
+            }
+            if running == result {
+                p2 += result as usize;
+                break 'p2_loop;
+            }
+        }
+    }
+    Ok((p1.to_string(), p2.to_string()))
+}

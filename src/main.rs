@@ -5,6 +5,7 @@ mod day03;
 mod day04;
 mod day05;
 mod day06;
+mod day07;
 
 use std::{env, ffi::OsString, path::Path, process::exit};
 
@@ -15,6 +16,7 @@ use day03::day03;
 use day04::day04;
 use day05::day05;
 use day06::day06;
+use day07::day07;
 
 fn main() -> Result<()> {
     let args: Vec<_> = env::args_os().skip(1).collect();
@@ -47,6 +49,7 @@ fn main() -> Result<()> {
         4 => day04(input_path),
         5 => day05(input_path),
         6 => day06(input_path),
+        7 => day07(input_path),
         _ => {
             eprintln!("Invalid day: {}", day);
             exit(-1);
