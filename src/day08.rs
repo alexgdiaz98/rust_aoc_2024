@@ -37,18 +37,19 @@ pub fn day08(input_path: &Path) -> Result<(String, String)> {
             let b = *v.get(1).unwrap();
             let di = b.0 - a.0;
             let dj = b.1 - a.1;
-            for antinode in [Coord(b.0 + di, b.1 + dj), Coord(a.0 - di, a.1 - dj)] {
-                if is_in_grid(antinode, max_i, max_j) {
-                    antinodes_p1.insert(antinode);
-                }
-            }
             let mut traverser = *b;
             while is_in_grid(traverser, max_i, max_j) {
+                if traverser == *b + Coord(di, dj) {
+                    antinodes_p1.insert(traverser);
+                }
                 antinodes_p2.insert(traverser);
                 traverser = traverser + Coord(di, dj);
             }
             traverser = *a;
             while is_in_grid(traverser, max_i, max_j) {
+                if traverser == *a + Coord(-di, -dj) {
+                    antinodes_p1.insert(traverser);
+                }
                 antinodes_p2.insert(traverser);
                 traverser = traverser + Coord(-di, -dj);
             }
