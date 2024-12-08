@@ -42,7 +42,7 @@ pub fn day08(input_path: &Path) -> Result<(String, String)> {
                     antinodes_p1.insert(traverser);
                 }
                 antinodes_p2.insert(traverser);
-                traverser = traverser + vector_addend;
+                traverser += vector_addend;
             }
             traverser = *a;
             while is_in_grid(traverser, max_i, max_j) {
@@ -50,7 +50,7 @@ pub fn day08(input_path: &Path) -> Result<(String, String)> {
                     antinodes_p1.insert(traverser);
                 }
                 antinodes_p2.insert(traverser);
-                traverser = traverser - vector_addend;
+                traverser -= vector_addend;
             }
         }
     }
