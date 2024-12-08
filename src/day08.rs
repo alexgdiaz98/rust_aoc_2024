@@ -35,23 +35,22 @@ pub fn day08(input_path: &Path) -> Result<(String, String)> {
         for v in nodes.iter().combinations(2) {
             let a = *v.first().unwrap();
             let b = *v.get(1).unwrap();
-            let di = b.0 - a.0;
-            let dj = b.1 - a.1;
+            let vector_addend = Coord(b.0 - a.0, b.1 - a.1);
             let mut traverser = *b;
             while is_in_grid(traverser, max_i, max_j) {
-                if traverser == *b + Coord(di, dj) {
+                if traverser == *b + vector_addend {
                     antinodes_p1.insert(traverser);
                 }
                 antinodes_p2.insert(traverser);
-                traverser = traverser + Coord(di, dj);
+                traverser = traverser + vector_addend;
             }
             traverser = *a;
             while is_in_grid(traverser, max_i, max_j) {
-                if traverser == *a + Coord(-di, -dj) {
+                if traverser == *a - vector_addend {
                     antinodes_p1.insert(traverser);
                 }
                 antinodes_p2.insert(traverser);
-                traverser = traverser + Coord(-di, -dj);
+                traverser = traverser - vector_addend;
             }
         }
     }
