@@ -22,13 +22,14 @@ pub fn day08(input_path: &Path) -> Result<(String, String)> {
         max_i = max_i.max(i as isize);
         for (j, c) in line.char_indices() {
             max_j = max_j.max(j as isize);
-            if c != '.' {
-                let coord = Coord(i as isize, j as isize);
-                freqs
-                    .entry(c)
-                    .and_modify(|e| _ = e.insert(coord))
-                    .or_insert(HashSet::from([coord]));
+            if c == '.' {
+                continue;
             }
+            let coord = Coord(i as isize, j as isize);
+            freqs
+                .entry(c)
+                .and_modify(|e| _ = e.insert(coord))
+                .or_insert(HashSet::from([coord]));
         }
     }
     for nodes in freqs.values() {
