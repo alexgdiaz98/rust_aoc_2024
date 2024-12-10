@@ -1,11 +1,9 @@
-use core::fmt;
-use std::collections::LinkedList;
 use std::fs::read_to_string;
 use std::path::Path;
 
 use anyhow::Result;
 
-#[derive(Debug, PartialEq, Eq, Clone, Copy)]
+#[derive(PartialEq, Eq, Clone, Copy)]
 pub enum ChunkType {
     Full(usize),
     Empty,
@@ -15,15 +13,6 @@ pub enum ChunkType {
 pub struct Chunk {
     len: u8,
     chunk_type: ChunkType,
-}
-
-impl fmt::Debug for Chunk {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match self.chunk_type {
-            ChunkType::Empty => write!(f, "{}", self.len),
-            ChunkType::Full(id) => write!(f, "\x1b[31m{}x{}\x1b[0m", id, self.len),
-        }
-    }
 }
 
 fn checksum(disk_map: &Vec<Chunk>) -> usize {
@@ -83,61 +72,54 @@ fn swap_with_gap(disk_map: &mut Vec<Chunk>, chunk_idx: usize, gap_idx: usize) {
     }
 }
 
-fn compact_v1(mut disk_map: LinkedList<Chunk>) -> Vec<Chunk> {
-    let mut compacted: Vec<Chunk> = vec![];
-    while !disk_map.is_empty() {
-        let mut cur_block = disk_map.pop_front().unwrap();
-        if let ChunkType::Full(_) = cur_block.chunk_type {
-            // Normal Block. Populate full blocks.
-            compacted.push(cur_block);
+fn compact_v1(disk_map: &mut Vec<Chunk>) {
+    let mut front_idx = 0;
+    let mut back_idx = disk_map.len() - 1;
+    while front_idx < back_idx {
+        // println!("{:?}", disk_map);
+        let mut front_chunk = *disk_map.get(front_idx).unwrap();
+        if front_chunk.chunk_type != ChunkType::Empty {
+            // Chunk is full. Move on.
+            front_idx += 1;
             continue;
-        };
-        // Observe last chunk. Don't pop yet.
-        let mut back_block = match disk_map.back_mut() {
-            Some(b) => b,
-            None => break, // The middle-most block was an empty block. Do nothing.
-        };
-        // Skip empty chunks in back when encountered.
-        if back_block.chunk_type == ChunkType::Empty {
-            disk_map.pop_back();
-            back_block = match disk_map.back_mut() {
-                Some(b) => b,
-                None => break, // The middle-most block was an empty block. Do nothing.
-            };
         }
-        match cur_block.len as i8 - back_block.len as i8 {
+        let mut back_chunk = *disk_map.get(back_idx).unwrap();
+        if back_chunk.chunk_type == ChunkType::Empty {
+            disk_map.remove(back_idx);
+            back_idx -= 1;
+            continue;
+        }
+        match front_chunk.len as i8 - back_chunk.len as i8 {
             ..0 => {
-                // More blocks in back chunk
-                compacted.push(Chunk {
-                    len: cur_block.len,
-                    chunk_type: back_block.chunk_type,
-                });
-                back_block.len -= cur_block.len;
-                continue;
+                front_chunk.chunk_type = back_chunk.chunk_type;
+                back_chunk.len -= front_chunk.len;
+                *disk_map.get_mut(front_idx).unwrap() = front_chunk;
+                *disk_map.get_mut(back_idx).unwrap() = back_chunk;
+                front_idx += 1;
             }
             0 => {
-                compacted.push(Chunk {
-                    len: back_block.len,
-                    chunk_type: back_block.chunk_type,
-                });
-                disk_map.pop_back();
-                continue;
+                front_chunk.chunk_type = back_chunk.chunk_type;
+                *disk_map.get_mut(front_idx).unwrap() = front_chunk;
+                disk_map.remove(back_idx);
+                front_idx += 1;
+                back_idx -= 1;
             }
             1.. => {
                 // More blocks in front chunk
-                compacted.push(Chunk {
-                    len: back_block.len,
-                    chunk_type: back_block.chunk_type,
-                });
-                cur_block.len -= back_block.len;
-                // Replace empty chunk in front; Pop full block in back;
-                disk_map.push_front(cur_block);
-                disk_map.pop_back();
-                continue;
+                // Copy all of back block
+                // Leave extra space
+                *disk_map.get_mut(front_idx).unwrap() = back_chunk;
+                disk_map.remove(back_idx);
+                disk_map.insert(
+                    front_idx + 1,
+                    Chunk {
+                        len: front_chunk.len - back_chunk.len,
+                        chunk_type: ChunkType::Empty,
+                    },
+                );
             }
         }
     }
-    compacted
 }
 
 fn compact_v2(disk_map: &mut Vec<Chunk>, max_id: usize) {
@@ -159,7 +141,7 @@ pub fn day09(input_path: &Path) -> Result<(String, String)> {
         .expect("Error reading file")
         .trim()
         .to_string();
-    let mut disk_map: LinkedList<Chunk> = LinkedList::new();
+    let mut disk_map_1: Vec<Chunk> = vec![];
     let mut disk_map_2: Vec<Chunk> = vec![];
     let mut id = 0;
     for (i, c) in contents.chars().enumerate() {
@@ -174,12 +156,12 @@ pub fn day09(input_path: &Path) -> Result<(String, String)> {
                 false => ChunkType::Empty,
             },
         };
-        disk_map.push_back(chunk);
+        disk_map_1.push(chunk);
         disk_map_2.push(chunk);
     }
-    let compacted_v1 = compact_v1(disk_map);
+    compact_v1(&mut disk_map_1);
     compact_v2(&mut disk_map_2, id - 1);
-    let p1 = checksum(&compacted_v1);
+    let p1 = checksum(&disk_map_1);
     let p2 = checksum(&disk_map_2);
 
     Ok((p1.to_string(), p2.to_string()))
