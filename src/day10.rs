@@ -4,12 +4,9 @@ use std::path::Path;
 
 use anyhow::Result;
 
-use crate::coord::Coord;
-
-const DIRECTIONS: [Coord; 4] = [Coord(-1, 0), Coord(0, -1), Coord(1, 0), Coord(0, 1)];
+use crate::coord::{Coord, ORTHOGONAL_DIRECTIONS};
 
 fn dfs(grid: &HashMap<Coord, u8>, start: Coord) -> (usize, usize) {
-    println!("Trailhead {:?}", start);
     let mut stack: LinkedList<Coord> = LinkedList::from([start]);
     let mut endings_reached: HashSet<Coord> = HashSet::new();
     let mut distinct_paths: usize = 0;
@@ -18,9 +15,8 @@ fn dfs(grid: &HashMap<Coord, u8>, start: Coord) -> (usize, usize) {
         if height == 9 {
             distinct_paths += 1;
             endings_reached.insert(v);
-            println!("Ending {:?} encountered.", v);
         }
-        for direction in DIRECTIONS {
+        for direction in ORTHOGONAL_DIRECTIONS {
             let w = v + direction;
             if let Some(&height_w) = grid.get(&w) {
                 if height + 1 == height_w {
@@ -29,7 +25,6 @@ fn dfs(grid: &HashMap<Coord, u8>, start: Coord) -> (usize, usize) {
             }
         }
     }
-    println!("Results: {} {}", endings_reached.len(), distinct_paths);
     (endings_reached.len(), distinct_paths)
 }
 

@@ -1,7 +1,30 @@
+use core::fmt;
 use std::ops::{Add, AddAssign, Mul, MulAssign, Sub, SubAssign};
 
-#[derive(Debug, Clone, Copy, Hash, PartialEq, Eq)]
+/// Cardinal Directions in clockwise order, starting at North (N, E, S, W)
+pub const ORTHOGONAL_DIRECTIONS: [Coord; 4] =
+    [Coord(-1, 0), Coord(0, 1), Coord(1, 0), Coord(0, -1)];
+
+/// Cardinal & Ordinal Directions in clockwise order, starting at North (N, NE, E, SE, S, SW, W, NW)
+pub const DIAGONAL_DIRECTIONS: [Coord; 8] = [
+    Coord(-1, 0),
+    Coord(-1, 1),
+    Coord(0, 1),
+    Coord(1, 1),
+    Coord(1, 0),
+    Coord(1, -1),
+    Coord(0, -1),
+    Coord(-1, -1),
+];
+
+#[derive(Clone, Copy, Hash, PartialEq, Eq)]
 pub struct Coord(pub isize, pub isize);
+
+impl fmt::Debug for Coord {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "[{},{}]", self.0, self.1)
+    }
+}
 
 impl Add for Coord {
     type Output = Self;

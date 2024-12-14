@@ -4,21 +4,10 @@ use std::path::Path;
 
 use anyhow::Result;
 
-use crate::coord::Coord;
-
-const DIRECTIONS: [Coord; 8] = [
-    Coord(0, 1),
-    Coord(0, -1),
-    Coord(1, 0),
-    Coord(-1, 0),
-    Coord(-1, -1),
-    Coord(-1, 1),
-    Coord(1, -1),
-    Coord(1, 1),
-];
+use crate::coord::{Coord, DIAGONAL_DIRECTIONS};
 
 fn find_matches(grid: &HashMap<Coord, char>, coord: Coord, p1: &mut usize, p2: &mut usize) {
-    for direction in DIRECTIONS {
+    for direction in DIAGONAL_DIRECTIONS {
         if let (Some('X'), Some('M'), Some('A'), Some('S')) = (
             grid.get(&coord),
             grid.get(&(coord + direction * 1)),

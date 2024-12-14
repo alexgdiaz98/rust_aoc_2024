@@ -5,7 +5,7 @@ use std::path::Path;
 
 use anyhow::Result;
 
-use crate::coord::Coord;
+use crate::coord::{Coord, ORTHOGONAL_DIRECTIONS};
 
 const WIDTH: isize = 101;
 const HEIGHT: isize = 103;
@@ -13,7 +13,6 @@ const X_MID: isize = WIDTH / 2;
 const X_MID_2: isize = X_MID + 1;
 const Y_MID: isize = HEIGHT / 2;
 const Y_MID_2: isize = Y_MID + 1;
-const DIRECTIONS: [Coord; 4] = [Coord(-1, 0), Coord(1, 0), Coord(0, -1), Coord(0, 1)];
 
 #[derive(Debug, Clone, Copy, Hash, PartialEq, Eq)]
 struct Robot {
@@ -47,7 +46,7 @@ fn count_adjacent(robots: &[Robot]) -> usize {
     let mut count = 0;
     let positions: HashSet<Coord> = robots.iter().map(|r| r.p).collect();
     'p: for position in positions.clone() {
-        for direction in DIRECTIONS {
+        for direction in ORTHOGONAL_DIRECTIONS {
             if positions.contains(&(position + direction)) {
                 count += 1;
                 continue 'p;
@@ -75,10 +74,10 @@ pub fn day14(input_path: &Path) -> Result<(String, String)> {
     for robot in robots.clone() {
         match (robot.p.0, robot.p.1) {
             (..0, _) | (_, ..0) => {
-                eprintln!("Negative Position!");
+                panic!("Negative Position!");
             }
             (WIDTH.., _) | (_, HEIGHT..) => {
-                eprintln!("Overflow position!");
+                panic!("Overflow position!");
             }
             (X_MID, _) | (_, Y_MID) => {}
             (..X_MID, ..Y_MID) => q1 += 1,
