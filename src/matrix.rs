@@ -7,6 +7,10 @@ pub struct Matrix2x2 {
 }
 
 impl Matrix2x2 {
+    pub const fn new(a: i64, b: i64, c: i64, d: i64) -> Self {
+        Self { a, b, c, d }
+    }
+
     pub fn det(&self) -> i64 {
         self.a * self.d - self.b * self.c
     }

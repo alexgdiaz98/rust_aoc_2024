@@ -14,24 +14,12 @@ fn read_line(re: &regex::Regex, line: &str) -> (i64, i64) {
 
 /// See: https://www.youtube.com/watch?v=jBsC34PxzoM
 fn is_in_linear_space(mat_a: Matrix2x2, i: i64, j: i64) -> Option<usize> {
-    let det_a = mat_a.det() as f64;
-    let det_ax = Matrix2x2 {
-        a: i,
-        b: mat_a.b,
-        c: j,
-        d: mat_a.d,
-    }
-    .det() as f64;
-    let det_ay = Matrix2x2 {
-        a: mat_a.a,
-        b: i,
-        c: mat_a.c,
-        d: j,
-    }
-    .det() as f64;
-    let x = det_ax / det_a;
-    let y = det_ay / det_a;
-    if x.fract() < 0.0001 && y.fract() <= 0.0001 {
+    let det_a = mat_a.det();
+    let det_ax = Matrix2x2::new(i, mat_a.b, j, mat_a.d).det();
+    let det_ay = Matrix2x2::new(mat_a.a, i, mat_a.c, j).det();
+    if det_ax % det_a == 0 && det_ay % det_a == 0 {
+        let x = det_ax / det_a;
+        let y = det_ay / det_a;
         return Some(3 * x as usize + y as usize);
     }
     None
@@ -47,7 +35,7 @@ pub fn day13(input_path: &Path) -> Result<(String, String)> {
         let (a, c) = read_line(&regex, machine_lines.next().unwrap());
         let (b, d) = read_line(&regex, machine_lines.next().unwrap());
         let (i, j) = read_line(&regex, machine_lines.next().unwrap());
-        let mat_a = Matrix2x2 { a, b, c, d };
+        let mat_a = Matrix2x2::new(a, b, c, d);
         if let Some(addend) = is_in_linear_space(mat_a, i, j) {
             p1 += addend;
         }
