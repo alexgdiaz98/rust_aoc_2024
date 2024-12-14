@@ -11,6 +11,7 @@ mod day09;
 mod day10;
 mod day11;
 mod day13;
+mod day14;
 pub mod matrix;
 
 use std::{env, ffi::OsString, path::Path, process::exit};
@@ -28,6 +29,7 @@ use day09::day09;
 use day10::day10;
 use day11::day11;
 use day13::day13;
+use day14::day14;
 
 fn main() -> Result<()> {
     let args: Vec<_> = env::args_os().skip(1).collect();
@@ -66,6 +68,7 @@ fn main() -> Result<()> {
         10 => day10(input_path),
         11 => day11(input_path),
         13 => day13(input_path),
+        14 => day14(input_path),
         _ => {
             eprintln!("Invalid day: {}", day);
             exit(-1);
