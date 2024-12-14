@@ -33,6 +33,7 @@ name = "aoc_2024"
 version = "0.1.0"
 dependencies = [
  "anyhow",
+ "disjoint",
  "itertools",
  "memoize",
  "regex",
@@ -43,6 +44,12 @@ name = "cfg-if"
 version = "1.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "baf1de4339761588bc0619e3cbc0120ee582ebb74b53b4efbf79117bd2da40fd"
+
+[[package]]
+name = "disjoint"
+version = "0.8.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "c37b399c91d093763e38c7a57a740e0005e30e5aff7132e791aada5eef3fed99"
 
 [[package]]
 name = "either"
