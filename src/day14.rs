@@ -73,11 +73,8 @@ pub fn day14(input_path: &Path) -> Result<(String, String)> {
     }
     for robot in robots.clone() {
         match (robot.p.0, robot.p.1) {
-            (..0, _) | (_, ..0) => {
-                panic!("Negative Position!");
-            }
-            (WIDTH.., _) | (_, HEIGHT..) => {
-                panic!("Overflow position!");
+            (..0, _) | (_, ..0) | (WIDTH.., _) | (_, HEIGHT..) => {
+                panic!("Overflow Position!");
             }
             (X_MID, _) | (_, Y_MID) => {}
             (..X_MID, ..Y_MID) => q1 += 1,

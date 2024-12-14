@@ -29,7 +29,7 @@ pub fn day13(input_path: &Path) -> Result<(String, String)> {
     let mut p1: usize = 0;
     let mut p2: usize = 0;
     let contents: String = read_to_string(input_path).expect("Error reading file");
-    let regex = regex::Regex::new(r".+X.(\d+), Y.(\d+)$").unwrap();
+    let regex = regex::Regex::new(r".+X.(-?\d+), Y.(-?\d+)$").unwrap();
     for machine in contents.split("\n\n") {
         let mut machine_lines = machine.split('\n');
         let (a, c) = read_line(&regex, machine_lines.next().unwrap());
