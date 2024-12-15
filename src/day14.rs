@@ -103,6 +103,3 @@ pub fn day14(input_path: &Path) -> Result<(String, String)> {
     let p2 = t;
     Ok((p1.to_string(), p2.to_string()))
 }
-
-// 52
-// 6643 too low
