@@ -1,9 +1,13 @@
 use core::fmt;
 use std::ops::{Add, AddAssign, Mul, MulAssign, Sub, SubAssign};
 
+pub const UP: Coord = Coord(-1, 0);
+pub const RIGHT: Coord = Coord(0, 1);
+pub const DOWN: Coord = Coord(1, 0);
+pub const LEFT: Coord = Coord(0, -1);
+
 /// Cardinal Directions in clockwise order, starting at North (N, E, S, W)
-pub const ORTHOGONAL_DIRECTIONS: [Coord; 4] =
-    [Coord(-1, 0), Coord(0, 1), Coord(1, 0), Coord(0, -1)];
+pub const ORTHOGONAL_DIRECTIONS: [Coord; 4] = [UP, RIGHT, DOWN, LEFT];
 
 /// Cardinal & Ordinal Directions in clockwise order, starting at North (N, NE, E, SE, S, SW, W, NW)
 pub const DIAGONAL_DIRECTIONS: [Coord; 8] = [
