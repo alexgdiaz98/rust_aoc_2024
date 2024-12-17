@@ -4,7 +4,9 @@ use std::path::Path;
 
 use anyhow::Result;
 
-use crate::coord::{Coord, DOWN, LEFT, RIGHT, UP};
+use crate::coord::{
+    Coord, HorizontalDirection, OrthogonalDirection, ToCoord, VerticalDirection, LEFT, RIGHT,
+};
 
 #[derive(Debug, Clone, Copy, Hash, PartialEq, Eq)]
 enum GridChar {
@@ -19,7 +21,7 @@ enum GridChar {
 fn push_boxes(
     grid: &mut HashMap<Coord, GridChar>,
     mut box_location: Coord,
-    direction: Coord,
+    direction: OrthogonalDirection,
 ) -> bool {
     let origin = box_location;
     while let Some(&entity) = grid.get(&box_location) {
@@ -29,14 +31,18 @@ fn push_boxes(
             GridChar::Box => {}
             _ => panic!("Unexpected value"),
         }
-        box_location += direction;
+        box_location += direction.coord();
     }
     grid.insert(box_location, GridChar::Box);
     grid.insert(origin, GridChar::Empty);
     true
 }
 
-fn push_horizontal(grid: &mut HashMap<Coord, GridChar>, origin: Coord, direction: Coord) -> bool {
+fn push_horizontal(
+    grid: &mut HashMap<Coord, GridChar>,
+    origin: Coord,
+    direction: HorizontalDirection,
+) -> bool {
     match grid.get(&origin).unwrap() {
         GridChar::Empty => return true,
         GridChar::Wall => return false,
@@ -48,7 +54,7 @@ fn push_horizontal(grid: &mut HashMap<Coord, GridChar>, origin: Coord, direction
         GridChar::Wall => return false,
         GridChar::Empty => return true,
     };
-    let next_location = origin + direction + direction;
+    let next_location = origin + (direction.coord() * 2);
     match grid.get(&next_location).unwrap() {
         GridChar::Wall => return false,
         GridChar::Box | GridChar::BoxRight => {
@@ -60,26 +66,26 @@ fn push_horizontal(grid: &mut HashMap<Coord, GridChar>, origin: Coord, direction
     };
     grid.insert(box_to_push, GridChar::Empty);
     grid.insert(box_to_push + RIGHT, GridChar::Empty);
-    grid.insert(box_to_push + direction, GridChar::Box);
-    grid.insert(box_to_push + direction + RIGHT, GridChar::BoxRight);
+    grid.insert(box_to_push + direction.coord(), GridChar::Box);
+    grid.insert(box_to_push + direction.coord() + RIGHT, GridChar::BoxRight);
     true
 }
 
-fn can_push_vertical(grid: &HashMap<Coord, GridChar>, origin: Coord, direction: Coord) -> bool {
-    let pushing_up = direction == UP;
+fn can_push_vertical(
+    grid: &HashMap<Coord, GridChar>,
+    origin: Coord,
+    direction: VerticalDirection,
+) -> bool {
     let box_to_push = match grid.get(&origin).unwrap() {
         GridChar::BoxRight => origin + Coord(0, -1),
         GridChar::Box => origin,
         GridChar::Wall => return false,
         GridChar::Empty => return true,
     };
-    let next_locations: [Coord; 2] = match pushing_up {
-        true => [
-            box_to_push + Coord(-1, 0),
-            box_to_push + Coord(-1, 0) + RIGHT,
-        ],
-        false => [box_to_push + Coord(1, 0), box_to_push + Coord(1, 0) + RIGHT],
-    };
+    let next_locations: [Coord; 2] = [
+        box_to_push + direction.coord(),
+        box_to_push + direction.coord() + RIGHT,
+    ];
     for next_location in next_locations {
         if !can_push_vertical(grid, next_location, direction) {
             return false;
@@ -88,28 +94,24 @@ fn can_push_vertical(grid: &HashMap<Coord, GridChar>, origin: Coord, direction: 
     true
 }
 
-fn push_vertical(grid: &mut HashMap<Coord, GridChar>, origin: Coord, direction: Coord) {
-    let pushing_up = direction == UP;
+fn push_vertical(grid: &mut HashMap<Coord, GridChar>, origin: Coord, direction: VerticalDirection) {
     let box_to_push = match grid.get(&origin).unwrap() {
         GridChar::BoxRight => origin + Coord(0, -1),
         GridChar::Box => origin,
         GridChar::Wall => panic!("Pushing in to a wall"),
         GridChar::Empty => return,
     };
-    let next_locations: [Coord; 2] = match pushing_up {
-        true => [
-            box_to_push + Coord(-1, 0),
-            box_to_push + Coord(-1, 0) + RIGHT,
-        ],
-        false => [box_to_push + Coord(1, 0), box_to_push + Coord(1, 0) + RIGHT],
-    };
+    let next_locations: [Coord; 2] = [
+        box_to_push + direction.coord(),
+        box_to_push + direction.coord() + RIGHT,
+    ];
     for next_location in next_locations {
         push_vertical(grid, next_location, direction);
     }
     grid.insert(box_to_push, GridChar::Empty);
     grid.insert(box_to_push + RIGHT, GridChar::Empty);
-    grid.insert(box_to_push + direction, GridChar::Box);
-    grid.insert(box_to_push + direction + RIGHT, GridChar::BoxRight);
+    grid.insert(box_to_push + direction.coord(), GridChar::Box);
+    grid.insert(box_to_push + direction.coord() + RIGHT, GridChar::BoxRight);
 }
 
 fn calc_gps(grid: &HashMap<Coord, GridChar>) -> usize {
@@ -158,34 +160,39 @@ pub fn day15(input_path: &Path) -> Result<(String, String)> {
     }
     for instruction in instructions.replace("\n", "").chars() {
         let direction = match instruction {
-            '^' => UP,
-            '>' => RIGHT,
-            'v' => DOWN,
-            '<' => LEFT,
+            '^' => OrthogonalDirection::UP,
+            '>' => OrthogonalDirection::RIGHT,
+            'v' => OrthogonalDirection::DOWN,
+            '<' => OrthogonalDirection::LEFT,
             _ => panic!("Unexpected instruction"),
         };
-        match grid.get(&(cursor + direction)) {
-            Some(GridChar::Empty) => cursor += direction,
+        match grid.get(&(cursor + direction.coord())) {
+            Some(GridChar::Empty) => cursor += direction.coord(),
             _ => {
-                if push_boxes(&mut grid, cursor + direction, direction) {
-                    cursor += direction;
+                if push_boxes(&mut grid, cursor + direction.coord(), direction) {
+                    cursor += direction.coord();
                 }
             }
         }
 
         match direction {
-            LEFT | RIGHT => {
-                if push_horizontal(&mut grid2, cursor2 + direction, direction) {
-                    cursor2 += direction;
+            OrthogonalDirection::LEFT | OrthogonalDirection::RIGHT => {
+                let horizontal_direction: HorizontalDirection = direction.into();
+                if push_horizontal(
+                    &mut grid2,
+                    cursor2 + direction.coord(),
+                    horizontal_direction,
+                ) {
+                    cursor2 += direction.coord();
                 }
             }
-            UP | DOWN => {
-                if can_push_vertical(&grid2, cursor2 + direction, direction) {
-                    push_vertical(&mut grid2, cursor2 + direction, direction);
-                    cursor2 += direction;
+            OrthogonalDirection::UP | OrthogonalDirection::DOWN => {
+                let vertical_direction: VerticalDirection = direction.into();
+                if can_push_vertical(&grid2, cursor2 + direction.coord(), vertical_direction) {
+                    push_vertical(&mut grid2, cursor2 + direction.coord(), vertical_direction);
+                    cursor2 += direction.coord();
                 }
             }
-            _ => panic!("unexpected direction"),
         };
     }
     let p1 = calc_gps(&grid);
